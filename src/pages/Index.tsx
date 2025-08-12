@@ -1,14 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Search, Filter, Download, AlertTriangle, CheckCircle, Info, TrendingUp, Database, Users, FileText } from 'lucide-react';
+import { Search, Download, AlertTriangle, CheckCircle, Info, TrendingUp, Database, Users, FileText } from 'lucide-react';
+import { SupabaseDataProvider } from '@/components/SupabaseDataProvider';
 
-const Index = () => {
+interface DashboardProps {
+  data: {
+    aircraftData: any[];
+    operatorsData: any[];
+    monitoringData: any[];
+    problematicComponents: any[];
+    isLoading: boolean;
+    error: any;
+  };
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
 
-  // Data from the provided files
-  const monitoringData = [
+  // Use data from Supabase or fallback to static data
+  const monitoringData = data.monitoringData.length > 0 ? data.monitoringData : [
     { name: 'Соответствие номенклатуре', value: 53, color: 'hsl(var(--success))' },
     { name: 'Агрегаты с неутвержденными документами', value: 0, color: 'hsl(var(--destructive))' },
     { name: 'Компоненты с дубликатами паспортов', value: 17, color: 'hsl(var(--warning))' },
@@ -16,14 +28,17 @@ const Index = () => {
     { name: 'Неутвержденные экспертами', value: 0, color: 'hsl(var(--destructive))' }
   ];
 
-  const aircraftData = [
+  const aircraftData = data.aircraftData.length > 0 ? data.aircraftData.map(aircraft => ({
+    ...aircraft,
+    lastCheck: aircraft.last_check
+  })) : [
     { id: 22977, type: 'Ми-8АМT', operator: 'Ютэйр-Инжиниринг', status: 'active', components: 53, lastCheck: '02.09.2009', authenticity: 96.2 },
     { id: 22978, type: 'Ми-8МТ', operator: 'Аэрогео', status: 'active', components: 48, lastCheck: '15.08.2009', authenticity: 98.5 },
     { id: 22979, type: 'Ми-26Т', operator: 'Геликс', status: 'active', components: 32, lastCheck: '10.07.2009', authenticity: 94.8 },
     { id: 22980, type: 'Ми-171', operator: 'Авиация Колымы', status: 'active', components: 41, lastCheck: '22.08.2009', authenticity: 97.3 }
   ];
 
-  const operatorsData = [
+  const operatorsData = data.operatorsData.length > 0 ? data.operatorsData : [
     { region: 'Архангельское', count: 3, compliant: 0 },
     { region: 'Восточно-Сибирское', count: 8, compliant: 2 },
     { region: 'Дальневосточное', count: 8, compliant: 3 },
@@ -559,6 +574,14 @@ const Index = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <SupabaseDataProvider>
+      {(data) => <Dashboard data={data} />}
+    </SupabaseDataProvider>
   );
 };
 

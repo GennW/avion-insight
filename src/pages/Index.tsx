@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Search, Download, AlertTriangle, CheckCircle, Info, TrendingUp, Database, Users, FileText } from 'lucide-react';
 import { SupabaseDataProvider } from '@/components/SupabaseDataProvider';
+import DetailedReportModal from '@/components/DetailedReportModal';
 
 interface DashboardProps {
   data: {
@@ -18,6 +19,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
+  const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Use data from Supabase or fallback to static data
   const monitoringData = data.monitoringData.length > 0 ? data.monitoringData : [
@@ -109,6 +112,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const totalOperators = operatorsData.reduce((sum, region) => sum + region.count, 0);
   const compliantOperators = operatorsData.reduce((sum, region) => sum + region.compliant, 0);
   const complianceRate = (compliantOperators / totalOperators) * 100;
+
+  const handleIssueClick = (issue: any) => {
+    setSelectedIssue(issue);
+    setIsReportModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -272,7 +280,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                     issue.severity === 'high' 
                       ? 'bg-destructive/10 border-destructive' 
                       : 'bg-warning/10 border-warning'
-                  }`}>
+                  } cursor-pointer`} onClick={() => handleIssueClick(issue)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <AlertTriangle className={`w-5 h-5 ${
@@ -560,6 +568,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         )}
       </main>
+
+      <DetailedReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        issue={selectedIssue}
+      />
 
       <footer className="bg-foreground text-background py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

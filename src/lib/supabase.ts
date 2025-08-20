@@ -239,6 +239,86 @@ export const componentAPI = {
   }
 }
 
+// ROS_INF_25 interface
+export interface RosInf25 {
+  rn4?: number
+  rm1?: number
+  rm2?: number
+  gn: string
+  ca?: string
+  ka?: string
+  mn?: string
+  bn?: string
+  pr_pasp?: string
+  source?: string
+  tl?: string
+  ks?: string
+  csd?: string
+  master?: string
+  postav?: string
+  rn1?: number
+  hostname?: string
+  me?: string
+  zav_izgot?: string
+  rem_zavod?: string
+  comment?: string
+  who_pasp_dubl?: string
+  gn_orig?: string
+  zn: string
+  username?: string
+  rm3?: number
+  rm4?: number
+  pe_ito?: number
+  pp_ito?: number
+  pk_ito?: number
+  dt_ito?: string
+  ss?: number
+  nk?: number
+  dateup?: string
+  dvne?: string
+  drne?: string
+  kol_rem?: number
+  dat_pasp_dubl?: string
+  dateap: string
+  dv: string
+  dr?: string
+  dn?: string
+  dp?: string
+  db?: string
+  ne1?: number
+  ne2?: number
+  ne3?: number
+  ne4?: number
+  ne1_to?: number
+  ne2_to?: number
+  nr1?: number
+  nr2?: number
+  nr3?: number
+  nr4?: number
+  n1_pto?: number
+  n2_pto?: number
+  rn2?: number
+  rn3?: number
+  folder_n?: string
+}
+
+// ROS_OF_STAT interface
+export interface RosOfStat {
+  id: number
+  ca?: string
+  reason?: number
+  pr_take?: number
+  expert?: string
+  upload?: string
+  comment?: string
+  file_ext?: string
+  date_rep?: string
+  date_wr?: string
+  fn?: string
+  date_in?: string
+  cn?: string
+}
+
 export const monitoringAPI = {
   getAll: async (): Promise<MonitoringResult[]> => {
     if (!supabase) {
@@ -256,6 +336,147 @@ export const monitoringAPI = {
     } catch (error) {
       console.warn('Failed to fetch from Supabase, using fallback data:', error)
       return fallbackMonitoringData
+    }
+  }
+}
+
+export const rosInf25API = {
+  getAll: async (): Promise<RosInf25[]> => {
+    if (!supabase) {
+      return []
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('ros_inf_25')
+        .select('*')
+        .order('dateap', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.warn('Failed to fetch ros_inf_25 data:', error)
+      return []
+    }
+  },
+
+  getByQuarter: async (year: number, quarter: number): Promise<RosInf25[]> => {
+    if (!supabase) {
+      return []
+    }
+
+    try {
+      const startMonth = (quarter - 1) * 3 + 1
+      const endMonth = quarter * 3
+      const startDate = `${year}-${startMonth.toString().padStart(2, '0')}-01`
+      const endDate = `${year}-${endMonth.toString().padStart(2, '0')}-31`
+
+      const { data, error } = await supabase
+        .from('ros_inf_25')
+        .select('*')
+        .gte('dateap', startDate)
+        .lte('dateap', endDate)
+        .order('dateap', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.warn('Failed to fetch ros_inf_25 quarterly data:', error)
+      return []
+    }
+  },
+
+  getDuplicates: async (): Promise<RosInf25[]> => {
+    if (!supabase) {
+      return []
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('ros_inf_25')
+        .select('*')
+        .not('who_pasp_dubl', 'is', null)
+        .order('dateap', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.warn('Failed to fetch duplicates:', error)
+      return []
+    }
+  }
+}
+
+export const rosOfStatAPI = {
+  getAll: async (): Promise<RosOfStat[]> => {
+    if (!supabase) {
+      return []
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('ros_of_stat')
+        .select('*')
+        .order('date_in', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.warn('Failed to fetch ros_of_stat data:', error)
+      return []
+    }
+  },
+
+  getByQuarter: async (year: number, quarter: number): Promise<RosOfStat[]> => {
+    if (!supabase) {
+      return []
+    }
+
+    try {
+      const startMonth = (quarter - 1) * 3 + 1
+      const endMonth = quarter * 3
+      const startDate = `${year}-${startMonth.toString().padStart(2, '0')}-01`
+      const endDate = `${year}-${endMonth.toString().padStart(2, '0')}-31`
+
+      const { data, error } = await supabase
+        .from('ros_of_stat')
+        .select('*')
+        .gte('date_in', startDate)
+        .lte('date_in', endDate)
+        .order('date_in', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.warn('Failed to fetch ros_of_stat quarterly data:', error)
+      return []
+    }
+  },
+
+  getStatistics: async (): Promise<{ total: number, byExpert: { [key: string]: number } }> => {
+    if (!supabase) {
+      return { total: 0, byExpert: {} }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('ros_of_stat')
+        .select('expert')
+      
+      if (error) throw error
+      
+      const total = data?.length || 0
+      const byExpert: { [key: string]: number } = {}
+      
+      data?.forEach(record => {
+        const expert = record.expert || 'Неизвестно'
+        byExpert[expert] = (byExpert[expert] || 0) + 1
+      })
+      
+      return { total, byExpert }
+    } catch (error) {
+      console.warn('Failed to fetch statistics:', error)
+      return { total: 0, byExpert: {} }
     }
   }
 }

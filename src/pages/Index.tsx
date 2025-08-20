@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Search, Download, AlertTriangle, CheckCircle, Info, TrendingUp, Database, Users, FileText } from 'lucide-react';
 import { SupabaseDataProvider } from '@/components/SupabaseDataProvider';
+import { QuarterlyReports } from '@/components/QuarterlyReports';
 import DetailedReportModal from '@/components/DetailedReportModal';
 
 interface DashboardProps {
@@ -134,7 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               </div>
             </div>
             <nav className="hidden md:flex space-x-8">
-              {['dashboard', 'aircraft', 'operators', 'criteria', 'reports'].map((tab) => (
+              {['dashboard', 'aircraft', 'operators', 'criteria', 'reports', 'quarterly'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -149,6 +150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   {tab === 'operators' && 'Авиакомпании'}
                   {tab === 'criteria' && 'Критерии'}
                   {tab === 'reports' && 'Отчеты'}
+                  {tab === 'quarterly' && 'Квартальные отчеты'}
                 </button>
               ))}
             </nav>
@@ -493,6 +495,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Quarterly Reports Tab */}
+        {activeTab === 'quarterly' && (
+          <div className="animate-slide-in">
+            <QuarterlyReports />
           </div>
         )}
 

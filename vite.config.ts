@@ -13,6 +13,14 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          charts: ['recharts', 'react-is']
+        }
+      }
+    }
   },
   plugins: [
     react(),

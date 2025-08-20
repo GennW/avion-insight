@@ -374,9 +374,9 @@ export const rosInf25API = {
       const { data, error } = await supabase
         .from('ros_inf_25')
         .select('*')
-        .gte('dateap', startDate)
-        .lte('dateap', endDate)
-        .order('dateap', { ascending: false })
+        .gte('dn', startDate)
+        .lte('dn', endDate)
+        .order('dn', { ascending: false })
       
       if (error) throw error
       return data || []

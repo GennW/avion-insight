@@ -8,8 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { FileText, Download, AlertTriangle, TrendingUp, Database, Eye } from 'lucide-react'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
 
 export const QuarterlyReports: React.FC = () => {
   const currentYear = new Date().getFullYear()
@@ -26,7 +24,18 @@ export const QuarterlyReports: React.FC = () => {
 
   const isLoading = rosInf25Loading || rosOfStatLoading
 
-  // Prepare chart data
+  // Format date helper
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return '-'
+    try {
+      const date = new Date(dateStr)
+      return date.toLocaleDateString('ru-RU')
+    } catch {
+      return '-'
+    }
+  }
+
+  // Prepare chart data - using 'dn' field for quarterly filtering
   const monthlyData = React.useMemo(() => {
     const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
     const quarterMonths = months.slice((selectedQuarter - 1) * 3, selectedQuarter * 3)
@@ -34,13 +43,15 @@ export const QuarterlyReports: React.FC = () => {
     return quarterMonths.map((month, index) => {
       const monthIndex = (selectedQuarter - 1) * 3 + index + 1
       const inf25Count = rosInf25Data.filter(item => {
-        const date = new Date(item.dateap)
-        return date.getMonth() + 1 === monthIndex
+        if (!item.dn) return false
+        const date = new Date(item.dn)
+        return date.getMonth() + 1 === monthIndex && date.getFullYear() === selectedYear
       }).length
       
       const ofStatCount = rosOfStatData.filter(item => {
-        const date = new Date(item.date_in || '')
-        return date.getMonth() + 1 === monthIndex
+        if (!item.date_in) return false
+        const date = new Date(item.date_in)
+        return date.getMonth() + 1 === monthIndex && date.getFullYear() === selectedYear
       }).length
       
       return {
@@ -49,7 +60,7 @@ export const QuarterlyReports: React.FC = () => {
         'Статистика файлов': ofStatCount
       }
     })
-  }, [rosInf25Data, rosOfStatData, selectedQuarter])
+  }, [rosInf25Data, rosOfStatData, selectedQuarter, selectedYear])
 
   const statusDistribution = React.useMemo(() => {
     const distribution = rosInf25Data.reduce((acc, item) => {
@@ -91,6 +102,15 @@ export const QuarterlyReports: React.FC = () => {
         onYearChange={setSelectedYear}
         onQuarterChange={setSelectedQuarter}
       />
+
+      {/* Info Block */}
+      <Card className="border-l-4 border-l-primary bg-primary/5">
+        <CardContent className="pt-4">
+          <p className="text-sm text-muted-foreground">
+            <strong>Примечание:</strong> Периоды (квартал/месяц) определяются по полю <code className="bg-muted px-1 py-0.5 rounded text-xs">dn</code> (дата установки/снятия) из таблицы ros_inf_25.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -220,7 +240,7 @@ export const QuarterlyReports: React.FC = () => {
                       <TableHead>Государственный номер</TableHead>
                       <TableHead>Заводской номер</TableHead>
                       <TableHead>Центр сервиса</TableHead>
-                      <TableHead>Дата постановки</TableHead>
+                      <TableHead>Дата установки/снятия</TableHead>
                       <TableHead>Источник</TableHead>
                       <TableHead>Действия</TableHead>
                     </TableRow>
@@ -232,7 +252,7 @@ export const QuarterlyReports: React.FC = () => {
                         <TableCell>{item.zn}</TableCell>
                         <TableCell>{item.csd}</TableCell>
                         <TableCell>
-                          {item.dateap ? format(new Date(item.dateap), 'dd.MM.yyyy', { locale: ru }) : '-'}
+                          {formatDate(item.dn)}
                         </TableCell>
                         <TableCell>
                           <Badge variant={item.source === 'МТУ' ? 'default' : 'secondary'}>
@@ -290,7 +310,7 @@ export const QuarterlyReports: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {item.dat_pasp_dubl ? format(new Date(item.dat_pasp_dubl), 'dd.MM.yyyy', { locale: ru }) : '-'}
+                          {formatDate(item.dat_pasp_dubl)}
                         </TableCell>
                         <TableCell className="max-w-xs truncate">
                           {item.comment || '-'}
@@ -338,7 +358,7 @@ export const QuarterlyReports: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {item.date_in ? format(new Date(item.date_in), 'dd.MM.yyyy', { locale: ru }) : '-'}
+                          {formatDate(item.date_in)}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">

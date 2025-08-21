@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = "https://bbvtpgtsysaafytbngvx.supabase.co"
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJidnRwZ3RzeXNhYWZ5dGJuZ3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNTA4NjUsImV4cCI6MjA3MDgyNjg2NX0.nrHE_L2ZG8ZkbiHV5rpNIBZgBUpXYq0GUu2ZD2nvzkE"
 
 // Check if we have valid Supabase credentials
-const hasValidSupabaseConfig = supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'https://your-project-id.supabase.co' &&
-  supabaseAnonKey !== 'your-anon-key-here'
+const hasValidSupabaseConfig = supabaseUrl && supabaseAnonKey
 
 let supabase: any = null
 
